@@ -1,0 +1,23 @@
+= Window handler
+
+== Purpose
+
+This was created to handle windows between screens in xfce.
+After some search I found `xdotool` wich allows some work to be done with simple scrips.
+But decided to make something more tailered.
+
+== Linking dynamically
+
+. Install `xdotool` package
+ 
+ $ pacman -S xdotool
+
+. Run `make build`
+
+== Linking statically
+
+. Install xdotool dependenies: `libxtst`, `libxinerama`, `libxkbcommon` packages
+
+* Clone xdotool repositor, run `make libxdo.a` to build the static library and place it in the root path.
+
+* Run `make build static`
