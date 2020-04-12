@@ -6,6 +6,10 @@ This was created to handle windows between screens in xfce.
 After some search I found `xdotool` wich allows some work to be done with simple scrips.
 But decided to make something more tailered.
 
+== Requirements
+
+ * Xinerama to get multi-screen resolution properly.
+
 == Linking dynamically
 
 . Install `xdotool` package

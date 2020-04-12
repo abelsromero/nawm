@@ -1,11 +1,10 @@
 .PHONY: all clean
 
 SOURCE = main.c
-TARGET = main
+TARGET = nawm
 
 build:
-	gcc -g $(SOURCE) -lX11 -o $(TARGET)
-#   gcc -g $(SOURCE) -lxdo -lX11 -o $(TARGET)
+	gcc -g $(SOURCE) -lX11 -lXinerama -o $(TARGET)
 
 clean:
 	rm -f $(TARGET)
