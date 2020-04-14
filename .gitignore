@@ -1,3 +1,5 @@
-.vscode
+/.vscode
+/build
+/log.c
 libxdo.a
 nawm

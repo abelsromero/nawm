@@ -8,7 +8,9 @@ But decided to make something more tailered.
 
 == Requirements
 
- * Xinerama to get multi-screen resolution properly.
+ * xdotool lib: https://github.com/jordansissel/xdotool
+ * lib.c: https://github.com/rxi/log.c
+ * Xinerama: to get multi-screen resolution properly
 
 == Linking dynamically
 

@@ -6,6 +6,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xrandr.h>
+#include <log.h>
 
 #define SIZE_PIXELS 0
 
@@ -29,6 +30,7 @@ void getWindowProperties(Window w, int *x_ret, int *y_ret, int *width, int *heig
 int main(int argc, char **argv)
 {
     openScreens();
+    log_set_fp(fopen("nawm.log", "a"));
 
     bool completedRun = False;
 
@@ -36,7 +38,7 @@ int main(int argc, char **argv)
     Window win;
     xdo = xdo_new(NULL);
     xdo_get_active_window(xdo, &win);
-
+   
     if (argc > 1)
     {
         for (int i = 1; i < argc; i++)
@@ -45,8 +47,7 @@ int main(int argc, char **argv)
             {
                 openScreens();
                 Screen *scr = XScreenOfDisplay(display, 0);
-                printf("dimensions:    %dx%d pixels\n",
-                       XDisplayWidth(display, 0), XDisplayHeight(display, 0));
+                log_info("dimensions:    %dx%d pixels", XDisplayWidth(display, 0), XDisplayHeight(display, 0));
                 printScreensInfo();
                 completedRun = true;
             }
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
                     int originScreen = targetScreen == 0 ? 1 : 0;
                     if (isTargetWindow(x, y, targetScreen))
                     {
-                        printf("Ignoring window move: target window is current window");
+                        log_info("Ignoring window move: target window is current window");
                     }
                     else
                     {
@@ -90,7 +91,7 @@ int main(int argc, char **argv)
                         if (targetY < 0)
                             targetY = 0;
 
-                        printf("Moving to\t\t%d, %d", targetX, targetY);
+                        log_info("Moving to\t\t%d, %d", targetX, targetY);
                         ret = XMoveResizeWindow(display, window, targetX, targetY, win_width, win_height);
                         if (ret == 0)
                             panic("Unexpected xlib error moving window");
@@ -118,14 +119,14 @@ int main(int argc, char **argv)
 
 void panic(char *message)
 {
-    fprintf(stderr, message);
+    log_error(message);
     exit(1);
 }
 
 void invalidArguments(char *appName)
 {
-    fprintf(stderr, "Invalid number of arguments\n");
-    fprintf(stderr, "Usage: %s [-info] [-move target_screen_index]\n", appName);
+    log_info("Invalid number of arguments");
+    log_info("Usage: %s [-info] [-move target_screen_index]", appName);
     exit(1);
 }
 
@@ -154,10 +155,10 @@ XineramaScreenInfo *initScreensInfo()
 
 void printScreensInfo()
 {
-    printf("Found screens: %d\n", screensCount);
+    log_info("Found screens: %d", screensCount);
     for (int i = 0; i < screensCount; i++)
     {
-        printf("\t%d: %dx%d\n", screensInfo[i].screen_number, screensInfo[i].width, screensInfo[i].height);
+        log_info("\t%d: %dx%d", screensInfo[i].screen_number, screensInfo[i].width, screensInfo[i].height);
     }
 }
 
@@ -190,7 +191,7 @@ void getWindowProperties(Window w, int *x_ret, int *y_ret, int *width, int *heig
     int translated_x, translated_y;
     Window unused_child;
     XTranslateCoordinates(display, w, attr.root, attr.x, attr.y, &translated_x, &translated_y, &unused_child);
-    printf("Window properties: x=%d,y=%d; w=%d,h=%d\n", translated_x, translated_y, attr.width, attr.height);
+    log_info("Window properties: x=%d,y=%d; w=%d,h=%d", translated_x, translated_y, attr.width, attr.height);
     *x_ret = translated_x;
     *y_ret = translated_y;
     *width = attr.width;
