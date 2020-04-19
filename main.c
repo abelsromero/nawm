@@ -34,11 +34,11 @@ int main(int argc, char **argv)
 
     bool completedRun = False;
 
-    xdo_t *xdo;
-    Window win;
-    xdo = xdo_new(NULL);
-    xdo_get_active_window(xdo, &win);
-   
+    // Window win;
+    // xdo_t *xdo;
+    // xdo = xdo_new(NULL);
+    // xdo_get_active_window(xdo, &win);
+
     if (argc > 1)
     {
         for (int i = 1; i < argc; i++)
@@ -91,8 +91,13 @@ int main(int argc, char **argv)
                         if (targetY < 0)
                             targetY = 0;
 
-                        log_info("Moving to\t\t%d, %d", targetX, targetY);
-                        ret = XMoveResizeWindow(display, window, targetX, targetY, win_width, win_height);
+                        // FIXME there's 
+                        int targetWidth, targetHeight;
+                        targetWidth = (win_width / (float)screensInfo[originScreen].width) * screensInfo[targetScreen].width;
+                        targetHeight = (win_height / (float)screensInfo[originScreen].height) * screensInfo[targetScreen].height;
+                        
+                        log_info("Moving to\t\t(%d, %d) \t%d,%d", targetX, targetY, targetWidth, targetHeight);
+                        ret = XMoveResizeWindow(display, window, targetX, targetY, targetWidth, targetHeight);
                         if (ret == 0)
                             panic("Unexpected xlib error moving window");
                     }
