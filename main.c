@@ -25,7 +25,9 @@ void printScreensInfo();
 bool isTargetWindow(unsigned int x, unsigned int y, unsigned int targetScreen);
 
 Window getCurrentWindow(Display *);
+int getActiveWindow(Display *, Window *);
 void getWindowProperties(Window w, int *x_ret, int *y_ret, int *width, int *height);
+unsigned char *getWindowPropertyByAtom(Display *display, Window window, Atom atom, long *nitems, Atom *type, int *size);
 
 int main(int argc, char **argv)
 {
@@ -58,8 +60,8 @@ int main(int argc, char **argv)
                     openScreens();
 
                     Window window;
-                    int unusedRevertRet;
-                    int ret = XGetInputFocus(display, &window, &unusedRevertRet);
+                    int ret;
+                    ret = getActiveWindow(display, &window);
                     if (ret == 0)
                         panic("Unexpected xlib error obtaining focus window");
 
@@ -91,11 +93,11 @@ int main(int argc, char **argv)
                         if (targetY < 0)
                             targetY = 0;
 
-                        // FIXME there's 
+                        // FIXME there's
                         int targetWidth, targetHeight;
                         targetWidth = (win_width / (float)screensInfo[originScreen].width) * screensInfo[targetScreen].width;
                         targetHeight = (win_height / (float)screensInfo[originScreen].height) * screensInfo[targetScreen].height;
-                        
+
                         log_info("Moving to\t\t(%d, %d) \t%d,%d", targetX, targetY, targetWidth, targetHeight);
                         ret = XMoveResizeWindow(display, window, targetX, targetY, targetWidth, targetHeight);
                         if (ret == 0)
@@ -184,6 +186,74 @@ Window getCurrentWindow(Display *d)
     int revert_to;
     XGetInputFocus(display, &focused, &revert_to);
     return focused;
+}
+
+int getActiveWindow(Display *display, Window *window_ret)
+{
+    Atom type;
+    int size;
+    long nitems;
+    unsigned char *data;
+    Atom request;
+    Window root;
+
+    request = XInternAtom(display, "_NET_ACTIVE_WINDOW", False);
+    root = XDefaultRootWindow(display);
+    data = getWindowPropertyByAtom(display, root, request, &nitems, &type, &size);
+
+    if (nitems > 0)
+    {
+        *window_ret = *((Window *)data);
+    }
+    else
+    {
+        *window_ret = 0;
+    }
+    free(data);
+
+    return (*window_ret != 0);
+}
+
+unsigned char *getWindowPropertyByAtom(Display *display, Window window, Atom atom, long *nitems, Atom *type, int *size)
+{
+    Atom actual_type;
+    int actual_format;
+    unsigned long _nitems;
+    /*unsigned long nbytes;*/
+    unsigned long bytes_after; /* unused */
+    unsigned char *prop;
+    int status;
+
+    status = XGetWindowProperty(display, window, atom, 0, (~0L),
+                                False, AnyPropertyType, &actual_type,
+                                &actual_format, &_nitems, &bytes_after,
+                                &prop);
+    if (status == BadWindow)
+    {
+        fprintf(stderr, "window id # 0x%lx does not exists!", window);
+        return NULL;
+    }
+    if (status != Success)
+    {
+        fprintf(stderr, "XGetWindowProperty failed!");
+        return NULL;
+    }
+
+    if (nitems != NULL)
+    {
+        *nitems = _nitems;
+    }
+
+    if (type != NULL)
+    {
+        *type = actual_type;
+    }
+
+    if (size != NULL)
+    {
+        *size = actual_format;
+    }
+    return prop;
 }
 
 void getWindowProperties(Window w, int *x_ret, int *y_ret, int *width, int *height)
